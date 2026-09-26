@@ -1,0 +1,7 @@
+import { createUser, addPoints } from "@/app/actions/admin";
+import { createClient } from "@/lib/supabase/server";
+
+export default async function UsersPage() {
+  const { data: users } = await (await createClient()).from("profiles").select("id, name, email, points").eq("role", "user").order("name");
+  return <><div className="page-heading"><div><span className="eyebrow">ADMIN / PEOPLE</span><h1>Build your crew.</h1><p>Create accounts and recognize great work with points.</p></div></div><div className="admin-grid"><section className="form-panel"><h2>New user</h2><form action={createUser} className="stack"><label>Name<input name="name" required /></label><label>Email<input name="email" type="email" required /></label><label>Temporary password<input name="password" type="password" minLength={6} required /></label><button className="button button-primary">Create user</button></form></section><section><div className="section-title"><h2>Team members</h2><span>{users?.length ?? 0} people</span></div><div className="list">{users?.map((user) => <article className="list-row" key={user.id}><div><strong>{user.name || "Unnamed user"}</strong><small>{user.email}</small></div><div className="points">{user.points ?? 0} pts</div><form action={addPoints} className="award-form"><input type="hidden" name="userId" value={user.id} /><input name="amount" type="number" min="1" placeholder="Pts" required /><input name="reason" placeholder="Reason" required /><button className="button button-small">Award</button></form></article>)}</div></section></div></>;
+}

@@ -1,0 +1,8 @@
+import { createClient } from "@/lib/supabase/server";
+
+export default async function GiftsPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const [{ data: profile }, { data: gifts }] = await Promise.all([supabase.from("profiles").select("name, points").eq("id", user!.id).single(), supabase.from("gifts").select("id, name, description, points_cost, image_url").order("points_cost")]);
+  return <><div className="page-heading hero-heading"><div><span className="eyebrow">YOUR REWARDS SHELF</span><h1>Spend your good work.</h1><p>Hey {profile?.name || "there"}, you have <strong>{profile?.points ?? 0} points</strong> ready to use.</p></div><div className="points-orbit"><span>{profile?.points ?? 0}</span><small>POINTS</small></div></div><div className="section-title"><h2>Available gifts</h2><span>Sorted by points</span></div><div className="gift-grid user-gifts">{gifts?.length ? gifts.map((gift) => <article className="gift-card" key={gift.id}><div className="gift-art" style={gift.image_url ? { backgroundImage: `url(${gift.image_url})` } : undefined}>{!gift.image_url && "✦"}</div><div><h3>{gift.name}</h3><p>{gift.description}</p><strong>{gift.points_cost} points</strong></div><button className="button button-small" disabled={(profile?.points ?? 0) < gift.points_cost}>Redeem</button></article>) : <p className="empty-state">Your rewards shelf is empty for now. Check back after an admin adds gifts.</p>}</div></>;
+}
